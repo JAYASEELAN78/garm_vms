@@ -348,6 +348,11 @@ router.put('/profile', async (req, res) => {
         // Update or create company details
         const { companyName, companyAddress, gstNumber, phone } = req.body;
         if (companyName) {
+            // Upgrade role to client if they were staff/default
+            if (user.role === 'staff' || !user.role) {
+                user.role = 'client';
+            }
+
             if (user.company) {
                 // Update existing company
                 await Company.findByIdAndUpdate(user.company, {
@@ -367,6 +372,7 @@ router.put('/profile', async (req, res) => {
                 });
                 await newCompany.save();
                 user.company = newCompany._id;
+                user.role = 'client'; // Ensure role is client for new company
             }
         }
 

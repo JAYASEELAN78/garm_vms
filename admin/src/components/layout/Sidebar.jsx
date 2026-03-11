@@ -19,8 +19,16 @@ const MENU_ITEMS = [
 const Sidebar = () => {
     return (
         <div className="w-64 bg-white border-r border-gray-200 flex flex-col shadow-sm hidden md:flex">
-            <div className="h-16 flex items-center justify-center border-b border-gray-200 px-4">
-                <h1 className="text-lg font-bold text-gray-800 tracking-wide uppercase">Smart Admin</h1>
+            <div className="h-20 flex items-center justify-center border-b border-gray-100 px-4">
+                <div className="flex items-center gap-3">
+                    <div className="w-10 h-10">
+                        <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
+                    </div>
+                    <div>
+                        <h1 className="text-md font-bold text-red-600 leading-none">V.M.S</h1>
+                        <h1 className="text-md font-bold text-gray-800">GARMENTS</h1>
+                    </div>
+                </div>
             </div>
             <div className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
                 {MENU_ITEMS.map((item) => (

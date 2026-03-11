@@ -38,19 +38,24 @@ const Dashboard = () => {
             try {
                 // We simulate a robust dashboard stat endpoint by parallel fetching
                 const [usersRes, ordersRes] = await Promise.all([
-                    api.get('/api/users'),
-                    api.get('/api/orders')
+                    api.get('/api/users?limit=1000'),
+                    api.get('/api/orders?limit=1000')
                 ]);
 
-                const clients = usersRes.data.filter(u => u.role === 'client');
-                const orders = ordersRes.data;
+                // Backend returns { success: true, data: { users: [...] } }
+                const usersData = usersRes.data?.data?.users || usersRes.data?.users || (Array.isArray(usersRes.data) ? usersRes.data : []);
+                // Filter out admins to show all customers/staff as clients in the dashboard stat
+                const clients = usersData.filter(u => u.role !== 'admin');
+
+                // Orders are usually flat based on my previous edits, but let's be safe
+                const orders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data?.data?.orders || ordersRes.data?.orders || []);
 
                 const active = orders.filter(o => !['Completed', 'Delivered', 'Cancelled'].includes(o.status));
                 const completed = orders.filter(o => ['Completed', 'Delivered'].includes(o.status));
-                const revenue = completed.reduce((sum, o) => sum + (o.estimatedCost || o.price || 0), 0);
+                const revenue = completed.reduce((sum, o) => sum + (Number(o.estimatedCost || o.price || 0)), 0);
 
                 const pendingTasks = orders.filter(o => o.status === 'Pending' || o.status === 'Order Placed').slice(0, 5);
-                const recentActivity = orders.slice(0, 5); // Assumes orders are sorted newest first by API
+                const recentActivity = [...orders].slice(0, 5);
 
                 setStats({
                     clients: clients.length,

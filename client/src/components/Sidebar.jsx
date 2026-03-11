@@ -23,12 +23,13 @@ const Sidebar = ({ isOpen, onClose }) => {
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center shadow-md shadow-red-200">
-                                    <span className="text-white font-bold text-lg">S</span>
+                                <div className="w-12 h-12">
+                                    <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                                 </div>
                                 <div>
-                                    <h1 className="text-lg font-bold text-red-600">V.M.S GRAMENTS</h1>
-                                    <p className="text-xs text-gray-400">Client Portal</p>
+                                    <h1 className="text-lg font-bold text-red-600 leading-none">V.M.S</h1>
+                                    <h1 className="text-lg font-bold text-gray-800">GARMENTS</h1>
+                                    <p className="text-[10px] text-gray-400 uppercase tracking-wider">Client Portal</p>
                                 </div>
                             </div>
                             <button onClick={onClose} className="lg:hidden text-gray-400 hover:text-gray-600">

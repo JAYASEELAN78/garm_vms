@@ -5,7 +5,7 @@ import toast from 'react-hot-toast'
 import { HiOutlineMail, HiOutlineLockClosed, HiOutlineUser, HiOutlinePhone, HiOutlineOfficeBuilding, HiOutlineEye, HiOutlineEyeOff } from 'react-icons/hi'
 
 const Register = () => {
-    const [form, setForm] = useState({ name: '', email: '', password: '', phone: '', companyName: '', companyAddress: '', gstNumber: '' })
+    const [form, setForm] = useState({ name: '', email: '', password: '', confirmPassword: '', phone: '' })
     const [showPassword, setShowPassword] = useState(false)
     const [loading, setLoading] = useState(false)
     const { register } = useAuth()
@@ -14,11 +14,19 @@ const Register = () => {
 
     const handleSubmit = async (e) => {
         e.preventDefault()
-        if (!form.name || !form.email || !form.password || !form.companyName) return toast.error('Please fill all required fields')
+        if (!form.name || !form.email || !form.password || !form.confirmPassword) return toast.error('Please fill all required fields')
+        if (form.password !== form.confirmPassword) return toast.error('Passwords do not match')
         if (form.password.length < 6) return toast.error('Password must be at least 6 characters')
+
         setLoading(true)
         try {
-            await register(form)
+            // We still send the form, backend will handle missing company fields
+            await register({
+                name: form.name,
+                email: form.email,
+                password: form.password,
+                phone: form.phone
+            })
             toast.success('Account created successfully!')
         } catch (err) {
             toast.error(err.response?.data?.message || 'Registration failed')
@@ -31,9 +39,6 @@ const Register = () => {
         { name: 'name', label: 'Full Name', type: 'text', icon: HiOutlineUser, placeholder: 'John Doe', required: true },
         { name: 'email', label: 'Email Address', type: 'email', icon: HiOutlineMail, placeholder: 'you@company.com', required: true },
         { name: 'phone', label: 'Phone Number', type: 'tel', icon: HiOutlinePhone, placeholder: '+91 98765 43210' },
-        { name: 'companyName', label: 'Company Name', type: 'text', icon: HiOutlineOfficeBuilding, placeholder: 'Your Company Ltd.', required: true },
-        { name: 'companyAddress', label: 'Company Address', type: 'text', icon: HiOutlineOfficeBuilding, placeholder: '123 Industrial Area' },
-        { name: 'gstNumber', label: 'GST Number', type: 'text', icon: HiOutlineOfficeBuilding, placeholder: '22AAAAA0000A1Z5' },
     ]
 
     return (
@@ -44,8 +49,8 @@ const Register = () => {
                     <div className="absolute bottom-32 right-16 w-72 h-72 bg-red-400/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
                 </div>
                 <div className="relative z-10 flex flex-col justify-center px-14">
-                    <div className="w-16 h-16 rounded-2xl bg-white/20 backdrop-blur-sm flex items-center justify-center mb-8">
-                        <span className="text-white font-bold text-2xl">S</span>
+                    <div className="w-24 h-24 mb-8">
+                        <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain filter brightness-0 invert" />
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-4">Join V.M.S GRAMENTS</h1>
                     <p className="text-lg text-red-100 mb-8">Start managing your orders like a pro</p>
@@ -64,9 +69,9 @@ const Register = () => {
 
             <div className="w-full lg:w-7/12 flex items-center justify-center p-8 bg-gray-50">
                 <div className="w-full max-w-lg">
-                    <div className="lg:hidden mb-8 text-center">
-                        <div className="w-14 h-14 rounded-2xl bg-gradient-to-br from-red-500 to-red-600 flex items-center justify-center mx-auto mb-4">
-                            <span className="text-white font-bold text-xl">S</span>
+                    <div className="lg:hidden mb-8 text-center text-center flex justify-center">
+                        <div className="w-20 h-20 mb-4">
+                            <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                         </div>
                     </div>
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">Create Account</h2>
@@ -87,16 +92,26 @@ const Register = () => {
                                 </div>
                             ))}
                         </div>
-                        <div>
-                            <label className="block text-sm font-medium text-gray-600 mb-1.5">Password <span className="text-red-500">*</span></label>
-                            <div className="relative">
-                                <HiOutlineLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
-                                <input type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange}
-                                    className="input-field pl-11 pr-11 py-2.5 text-sm" placeholder="Min. 6 characters" />
-                                <button type="button" onClick={() => setShowPassword(!showPassword)}
-                                    className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
-                                    {showPassword ? <HiOutlineEyeOff className="w-4.5 h-4.5" /> : <HiOutlineEye className="w-4.5 h-4.5" />}
-                                </button>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Password <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <HiOutlineLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
+                                    <input type={showPassword ? 'text' : 'password'} name="password" value={form.password} onChange={handleChange}
+                                        className="input-field pl-11 pr-11 py-2.5 text-sm" placeholder="Min. 6 characters" />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="block text-sm font-medium text-gray-600 mb-1.5">Confirm Password <span className="text-red-500">*</span></label>
+                                <div className="relative">
+                                    <HiOutlineLockClosed className="absolute left-3.5 top-1/2 -translate-y-1/2 w-4.5 h-4.5 text-gray-400" />
+                                    <input type={showPassword ? 'text' : 'password'} name="confirmPassword" value={form.confirmPassword} onChange={handleChange}
+                                        className="input-field pl-11 pr-11 py-2.5 text-sm" placeholder="Repeat password" />
+                                    <button type="button" onClick={() => setShowPassword(!showPassword)}
+                                        className="absolute right-3.5 top-1/2 -translate-y-1/2 text-gray-400 hover:text-gray-600">
+                                        {showPassword ? <HiOutlineEyeOff className="w-4.5 h-4.5" /> : <HiOutlineEye className="w-4.5 h-4.5" />}
+                                    </button>
+                                </div>
                             </div>
                         </div>
                         <button type="submit" disabled={loading}

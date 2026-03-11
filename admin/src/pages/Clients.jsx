@@ -14,10 +14,12 @@ const ClientsPage = () => {
     useEffect(() => {
         const fetchClients = async () => {
             try {
-                const { data } = await api.get('/api/users?role=client&limit=100');
+                // Fetch all users to ensure we don't miss those who haven't been upgraded to 'client' role yet
+                const { data } = await api.get('/api/users?limit=100');
                 // Handle nested response: { success, data: { users: [...] } }
                 const usersArray = data?.data?.users || data?.users || (Array.isArray(data) ? data : []);
-                setClients(usersArray.filter(u => u.role === 'client'));
+                // Filter out admins to show only customers/clients
+                setClients(usersArray.filter(u => u.role !== 'admin'));
             } catch (error) {
                 console.error('Failed to load clients', error);
             } finally {
@@ -131,15 +133,23 @@ const ClientsPage = () => {
                                             </div>
                                         </TableCell>
                                         <TableCell>
-                                            <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${client.isActive !== false
+                                            <div className="flex flex-col gap-1">
+                                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-[10px] font-bold uppercase tracking-wider ${client.role === 'client'
+                                                    ? 'bg-blue-100 text-blue-700'
+                                                    : 'bg-gray-100 text-gray-600'
+                                                    }`}>
+                                                    {client.role}
+                                                </span>
+                                                <span className={`inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold ${client.isActive !== false
                                                     ? 'bg-emerald-100 text-emerald-700'
                                                     : 'bg-red-100 text-red-600'
-                                                }`}>
-                                                {client.isActive !== false ? '● Active' : '● Inactive'}
-                                            </span>
-                                            <p className="text-[10px] text-gray-400 mt-1">
-                                                Joined {new Date(client.createdAt).toLocaleDateString()}
-                                            </p>
+                                                    }`}>
+                                                    {client.isActive !== false ? '● Active' : '● Inactive'}
+                                                </span>
+                                                <p className="text-[10px] text-gray-400 mt-1">
+                                                    Joined {new Date(client.createdAt).toLocaleDateString()}
+                                                </p>
+                                            </div>
                                         </TableCell>
                                         <TableCell>
                                             <div className="flex items-center gap-1.5">
