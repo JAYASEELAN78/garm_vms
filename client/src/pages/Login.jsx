@@ -17,8 +17,16 @@ const Login = () => {
         if (!email || !password) return toast.error('Please fill all fields')
         setLoading(true)
         try {
-            await login(email, password)
+            const user = await login(email, password)
             toast.success('Welcome back!')
+
+            // Redirect admins to the Admin Panel
+            if (user?.role === 'admin') {
+                const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
+                window.location.href = adminUrl
+                return
+            }
+
             navigate('/dashboard')
         } catch (err) {
             toast.error(err.response?.data?.message || 'Login failed')

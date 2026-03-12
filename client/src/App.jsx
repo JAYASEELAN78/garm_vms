@@ -8,6 +8,12 @@ import Register from './pages/Register'
 function App() {
     const { user } = useAuth()
 
+    // Immediately redirect any logged-in admins to the admin portal
+    if (user?.role === 'admin') {
+        window.location.href = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
+        return null
+    }
+
     return (
         <>
             <Toaster position="top-right" toastOptions={{
