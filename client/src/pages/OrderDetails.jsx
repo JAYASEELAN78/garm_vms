@@ -80,9 +80,43 @@ const OrderDetails = () => {
                 <span className={`status-badge border ml-auto ${getStatusColor(order.status)}`}>{order.status}</span>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mt-6">
                 {/* Main */}
                 <div className="lg:col-span-2 space-y-6">
+                    {order.priceStatus === 'Quoted' && (
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center justify-between">
+                            <div>
+                                <h3 className="text-lg font-bold text-amber-900 flex items-center gap-2">
+                                    <HiOutlineCheckCircle className="w-5 h-5" />
+                                    Price Quote Received
+                                </h3>
+                                <p className="text-amber-700 text-sm mt-1">
+                                    Admin has quoted <span className="font-bold text-lg text-amber-900">₹{order.estimatedCost?.toLocaleString()}</span> for this order.
+                                    Please confirm this price so we can start procuring materials.
+                                </p>
+                            </div>
+                            <div className="flex gap-3 w-full md:w-auto">
+                                <button
+                                    onClick={() => document.getElementById('messageInput')?.focus()}
+                                    className="px-4 py-2 border border-amber-300 text-amber-700 bg-white rounded-lg text-sm font-semibold hover:bg-amber-50 w-full md:w-auto text-center"
+                                >
+                                    Negotiate
+                                </button>
+                                <button
+                                    onClick={async () => {
+                                        try {
+                                            await api.put(`/api/orders/${id}`, { priceStatus: 'Confirmed' });
+                                            setOrder({ ...order, priceStatus: 'Confirmed' });
+                                            toast.success('Price accepted! Work will commence shortly.');
+                                        } catch (e) { toast.error('Failed to accept price'); }
+                                    }}
+                                    className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-bold shadow-md w-full md:w-auto text-center"
+                                >
+                                    Accept Price
+                                </button>
+                            </div>
+                        </div>
+                    )}
                     {/* Timeline */}
                     <div className="glass-card p-6">
                         <h2 className="text-lg font-semibold text-gray-800 mb-6">Order Progress</h2>

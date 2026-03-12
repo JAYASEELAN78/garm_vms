@@ -102,7 +102,7 @@ const Payments = () => {
 
         try {
             const { data } = await api.post('/api/stripe/create-checkout-session', {
-                amount: order.estimatedCost || order.price || 0,
+                amount: order.finalCost || order.estimatedCost || order.price || 0,
                 orderId: order._id
             })
 
@@ -163,7 +163,7 @@ const Payments = () => {
                                     <td className="px-6 py-4 font-mono font-medium text-red-600">{order.order_id || order.orderId}</td>
                                     <td className="px-6 py-4 font-bold text-gray-800">{order.product_name || order.productName}</td>
                                     <td className="px-6 py-4 text-gray-600">{order.quantity} {order.unit}</td>
-                                    <td className="px-6 py-4 font-bold text-gray-900">₹{order.estimatedCost?.toLocaleString() || order.price?.toLocaleString() || 0}</td>
+                                    <td className="px-6 py-4 font-bold text-gray-900">₹{(order.finalCost || order.estimatedCost || order.price || 0).toLocaleString()}</td>
                                     <td className="px-6 py-4">
                                         <span className={`status-badge border bg-green-100 text-green-600 border-green-200`}>
                                             {order.status}
@@ -172,13 +172,17 @@ const Payments = () => {
                                     <td className="px-6 py-4 text-gray-500">{formatDate(order.delivery_date || order.deliveryDate)}</td>
                                     <td className="px-6 py-4">
                                         {order.payment_status === 'Paid' ? (
-                                            <span className="flex items-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-black uppercase tracking-wider border border-green-100">
+                                            <span className="flex items-center justify-center gap-1.5 px-3 py-1.5 bg-green-50 text-green-600 rounded-lg text-xs font-black uppercase tracking-wider border border-green-100">
                                                 <HiOutlineCurrencyRupee className="w-4 h-4" /> Paid
+                                            </span>
+                                        ) : order.priceStatus !== 'Finalized' ? (
+                                            <span className="flex items-center justify-center text-center px-3 py-1.5 bg-amber-50 text-amber-700 rounded-lg text-[10px] font-bold uppercase tracking-wider border border-amber-200">
+                                                Awaiting Final Amount
                                             </span>
                                         ) : (
                                             <button
                                                 onClick={() => initiatePayment(order)}
-                                                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-bold hover:from-red-700 hover:to-red-800 transition-all shadow-md shadow-red-200 uppercase tracking-wider"
+                                                className="flex items-center gap-1.5 px-4 py-2 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-lg text-xs font-bold hover:from-red-700 hover:to-red-800 transition-all shadow-md shadow-red-200 uppercase tracking-wider w-full justify-center"
                                             >
                                                 <HiOutlineCurrencyRupee className="w-4 h-4" /> Pay Now
                                             </button>
@@ -312,7 +316,7 @@ const Payments = () => {
                             <div className="bg-gray-50 p-4 flex items-center justify-center gap-2 border-t border-gray-100">
                                 <HiOutlineCurrencyRupee className="text-gray-400" />
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount to Pay:</span>
-                                <span className="text-sm font-black text-gray-800">₹{(selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
+                                <span className="text-sm font-black text-gray-800">₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
                             </div>
                         </motion.div>
                     </div>
@@ -369,7 +373,7 @@ const Payments = () => {
 
                                     <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
                                         <div className="text-xs font-bold text-green-600 uppercase tracking-widest mb-1">Amount to Pay</div>
-                                        <div className="text-2xl font-black text-green-700">₹{(selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</div>
+                                        <div className="text-2xl font-black text-green-700">₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</div>
                                     </div>
                                 </div>
 
