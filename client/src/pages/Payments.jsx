@@ -15,6 +15,7 @@ import {
 import { SiPhonepe, SiGooglepay } from 'react-icons/si'
 import { formatDate } from '../utils/helpers'
 import { loadStripe } from '@stripe/stripe-js'
+import { motion, AnimatePresence } from 'framer-motion'
 
 const Payments = () => {
     const navigate = useNavigate()
