@@ -61,6 +61,7 @@ const ProductionPage = () => {
                             <TableHead>
                                 <TableHeader>Prod ID</TableHeader>
                                 <TableHeader>Ref Order</TableHeader>
+                                <TableHeader>Client</TableHeader>
                                 <TableHeader>Assigned Staff</TableHeader>
                                 <TableHeader>Start Date</TableHeader>
                                 <TableHeader>Status</TableHeader>
@@ -78,6 +79,11 @@ const ProductionPage = () => {
                                         <TableCell className="font-medium text-gray-900">{prod.production_id}</TableCell>
                                         <TableCell className="text-blue-600">
                                             {prod.order_id?.order_id || 'Unknown'}
+                                        </TableCell>
+                                        <TableCell>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {prod.order_id?.company_id?.name || prod.order_id?.user_id?.name || 'Unknown'}
+                                            </div>
                                         </TableCell>
                                         <TableCell>{prod.assigned_staff || 'Unassigned'}</TableCell>
                                         <TableCell>

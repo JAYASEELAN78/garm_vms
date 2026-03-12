@@ -19,7 +19,10 @@ export const getProductions = async (req, res) => {
     try {
         const productions = await Production.find().populate({
             path: 'order_id',
-            populate: { path: 'company_id' }
+            populate: [
+                { path: 'company_id' },
+                { path: 'user_id', select: 'name email' }
+            ]
         });
         res.json(productions);
     } catch (err) { res.status(500).json({ error: err.message }); }

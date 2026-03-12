@@ -10,7 +10,13 @@ export const createDispatch = async (req, res) => {
 
 export const getDispatches = async (req, res) => {
     try {
-        const dispatches = await Dispatch.find().populate('order_id');
+        const dispatches = await Dispatch.find().populate({
+            path: 'order_id',
+            populate: [
+                { path: 'company_id' },
+                { path: 'user_id', select: 'name' }
+            ]
+        });
         res.json(dispatches);
     } catch (err) { res.status(500).json({ error: err.message }); }
 };

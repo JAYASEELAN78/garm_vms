@@ -39,13 +39,22 @@ export const getInvoices = async (req, res) => {
             query.order_id = { $in: clientOrderIds };
         }
 
-        const invoices = await Invoice.find(query).populate('order_id').sort({ createdAt: - 1 });
+        const invoices = await Invoice.find(query)
+            .populate({
+                path: 'order_id',
+                populate: [
+                    { path: 'company_id' },
+                    { path: 'user_id', select: 'name' }
+                ]
+            })
+            .sort({ createdAt: -1 });
 
         // Format exactly how the frontend expects it
         const formatted = invoices.map(inv => ({
             _id: inv._id,
             invoiceId: inv.invoice_id,
             orderNumber: inv.order_id ? inv.order_id.order_id : 'UNKNOWN',
+            clientName: inv.order_id ? (inv.order_id.company_id?.name || inv.order_id.user_id?.name || 'Unknown Client') : 'Unknown',
             total: inv.total,
             status: 'Paid',
             createdAt: inv.createdAt
@@ -61,7 +70,10 @@ export const generateInvoicePDF = async (req, res) => {
     try {
         const invoice = await Invoice.findById(req.params.id).populate({
             path: 'order_id',
-            populate: { path: 'company_id' }
+            populate: [
+                { path: 'company_id' },
+                { path: 'user_id', select: 'name' }
+            ]
         });
 
         if (!invoice) return res.status(404).json({ message: 'Invoice not found' });
@@ -91,8 +103,10 @@ export const generateInvoicePDF = async (req, res) => {
 
         doc.moveDown();
 
-        const companyName = invoice.order_id && invoice.order_id.company_id ? invoice.order_id.company_id.name : 'Valued Client';
-        doc.text(`Billed To: ${companyName}`);
+        const clientName = invoice.order_id
+            ? (invoice.order_id.company_id?.name || invoice.order_id.user_id?.name || 'Valued Client')
+            : 'Valued Client';
+        doc.text(`Billed To: ${clientName}`);
         doc.moveDown(2);
 
         // Table Header

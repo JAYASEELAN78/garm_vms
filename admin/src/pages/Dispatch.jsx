@@ -51,6 +51,7 @@ const DispatchPage = () => {
                             <TableHead>
                                 <TableHeader>Dispatch ID</TableHeader>
                                 <TableHeader>Order Ref</TableHeader>
+                                <TableHeader>Client</TableHeader>
                                 <TableHeader>Transport Info</TableHeader>
                                 <TableHeader>Status</TableHeader>
                                 <TableHeader>Actions</TableHeader>
@@ -72,12 +73,17 @@ const DispatchPage = () => {
                                             {dispatch.order_id?.order_id || 'Unknown'}
                                         </TableCell>
                                         <TableCell>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {dispatch.order_id?.company_id?.name || dispatch.order_id?.user_id?.name || 'Unknown'}
+                                            </div>
+                                        </TableCell>
+                                        <TableCell>
                                             {dispatch.transport || 'Unassigned Vehicle'}
                                         </TableCell>
                                         <TableCell>
                                             <span className={`px-2.5 py-1 text-xs font-semibold rounded-full ${dispatch.delivery_status === 'Delivered' ? 'bg-green-100 text-green-800' :
-                                                    dispatch.delivery_status === 'In Transit' ? 'bg-indigo-100 text-indigo-800' :
-                                                        'bg-yellow-100 text-yellow-800'
+                                                dispatch.delivery_status === 'In Transit' ? 'bg-indigo-100 text-indigo-800' :
+                                                    'bg-yellow-100 text-yellow-800'
                                                 }`}>
                                                 {dispatch.delivery_status || 'Pending'}
                                             </span>

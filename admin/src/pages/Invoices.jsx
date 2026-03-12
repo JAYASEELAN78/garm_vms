@@ -56,6 +56,7 @@ const InvoicesPage = () => {
                             <TableHead>
                                 <TableHeader>Invoice ID</TableHeader>
                                 <TableHeader>Order Ref</TableHeader>
+                                <TableHeader>Client</TableHeader>
                                 <TableHeader>Date</TableHeader>
                                 <TableHeader>Total Amount</TableHeader>
                                 <TableHeader>Status</TableHeader>
@@ -72,6 +73,9 @@ const InvoicesPage = () => {
                                     <TableRow key={invoice._id}>
                                         <TableCell className="font-semibold text-gray-900">{invoice.invoiceId}</TableCell>
                                         <TableCell className="text-blue-600">{invoice.orderNumber || 'Unknown'}</TableCell>
+                                        <TableCell>
+                                            <div className="text-sm font-medium text-gray-900">{invoice.clientName || 'Unknown'}</div>
+                                        </TableCell>
                                         <TableCell>{new Date(invoice.createdAt).toLocaleDateString()}</TableCell>
                                         <TableCell className="font-medium text-gray-900">₹{invoice.total}</TableCell>
                                         <TableCell>

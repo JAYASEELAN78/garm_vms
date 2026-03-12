@@ -45,7 +45,7 @@ const OrdersPage = () => {
     const filteredOrders = orders.filter(o =>
         o.order_id?.toLowerCase().includes(searchTerm.toLowerCase()) ||
         o.product_name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        o.company_id?.name?.toLowerCase().includes(searchTerm.toLowerCase())
+        (o.company_id?.name || o.user_id?.name || '').toLowerCase().includes(searchTerm.toLowerCase())
     );
 
     return (
@@ -106,7 +106,12 @@ const OrdersPage = () => {
                                             <span className="font-semibold text-gray-900">{order.order_id}</span>
                                         </TableCell>
                                         <TableCell>
-                                            <div className="text-sm font-medium text-gray-900">{order.company_id?.name || 'Unknown'}</div>
+                                            <div className="text-sm font-medium text-gray-900">
+                                                {order.company_id?.name || order.user_id?.name || 'Unknown Client'}
+                                            </div>
+                                            {order.user_id?.name && order.company_id?.name && (
+                                                <div className="text-xs text-gray-500">{order.user_id.name}</div>
+                                            )}
                                         </TableCell>
                                         <TableCell>
                                             <div className="text-sm text-gray-900">{order.product_name}</div>
