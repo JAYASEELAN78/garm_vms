@@ -73,7 +73,7 @@ export const createCheckoutSession = async (req, res) => {
         const stripe = new Stripe(stripeKey);
 
         const session = await stripe.checkout.sessions.create({
-            automatic_payment_methods: { enabled: true },
+            payment_method_types: ['card', 'upi'],
             line_items: [
                 {
                     price_data: {
