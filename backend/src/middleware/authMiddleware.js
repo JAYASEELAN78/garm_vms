@@ -20,7 +20,23 @@ export const protect = async (req, res, next) => {
             next();
         } catch (error) {
             console.error(error);
-            res.status(401).json({ message: 'Not authorized, token failed' });
+            return res.status(401).json({ message: 'Not authorized, token failed' });
+        }
+    } else if (req.query.token) {
+        try {
+            token = req.query.token;
+
+            const decoded = jwt.verify(token, JWT_SECRET);
+
+            req.user = await User.findById(decoded.userId).select('-password');
+            if (!req.user) {
+                return res.status(401).json({ message: 'User not found' });
+            }
+
+            next();
+        } catch (error) {
+            console.error(error);
+            return res.status(401).json({ message: 'Not authorized, token failed' });
         }
     }
 

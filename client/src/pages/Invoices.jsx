@@ -21,21 +21,13 @@ const Invoices = () => {
         finally { setLoading(false) }
     }
 
-    const handleDownload = async (id, number) => {
+    const handleDownload = (id) => {
         try {
-            const res = await api.get(`/api/invoices/${id}/download`, { responseType: 'blob' })
-            const url = window.URL.createObjectURL(new Blob([res.data]))
-            const link = document.createElement('a')
-            link.href = url
-            link.setAttribute('download', `invoice-${number}.pdf`)
-            document.body.appendChild(link)
-            link.click()
+            const token = localStorage.getItem('token');
+            const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoices/${id}/download?token=${token}`;
+            window.open(url, '_blank');
         } catch (err) {
-            // IDM interception aborts the fetch before a response is received. 
-            // Only show an error if the server actually returned an error status.
-            if (err.response) {
-                toast.error('Download failed')
-            }
+            toast.error('Download failed');
         }
     }
 
