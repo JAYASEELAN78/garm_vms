@@ -8,7 +8,7 @@ const generateInvoicePDF = (invoice, stream) => {
     doc.fontSize(24).font('Helvetica-Bold').text('INVOICE', { align: 'center' });
     doc.moveDown(0.5);
     doc.fontSize(10).font('Helvetica').fillColor('#666')
-        .text('Smart Job Work Order Management System', { align: 'center' });
+        .text('V.M.S GARMENTS Order Management System', { align: 'center' });
     doc.moveDown(1);
 
     // Invoice details

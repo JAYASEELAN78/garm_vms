@@ -39,7 +39,7 @@ const Login = () => {
                     <div className="w-20 h-20 mb-8">
                         <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain filter brightness-0 invert" />
                     </div>
-                    <h1 className="text-4xl font-bold text-white mb-4">Smart Job Work</h1>
+                    <h1 className="text-4xl font-bold text-white mb-4">V.M.S GARMENTS</h1>
                     <p className="text-xl text-red-100 mb-8">Order Management System</p>
                     <div className="space-y-4">
                         {['Track orders in real-time', 'Upload design files', 'Download invoices instantly'].map((feat, i) => (
@@ -61,7 +61,7 @@ const Login = () => {
                         <div className="w-20 h-20 mx-auto mb-4">
                             <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                         </div>
-                        <h1 className="text-2xl font-bold text-gray-800">Smart Job Work</h1>
+                        <h1 className="text-2xl font-bold text-gray-800">V.M.S GARMENTS</h1>
                     </div>
 
                     <h2 className="text-3xl font-bold text-gray-800 mb-2">Welcome back</h2>

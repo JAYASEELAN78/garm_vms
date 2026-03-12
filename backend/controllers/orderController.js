@@ -105,7 +105,7 @@ const updateOrderStatus = async (req, res) => {
                 await sendEmail({
                     email: order.user.email,
                     subject: `Order Status Updated: ${order.orderId}`,
-                    message: `Hello ${order.user.name},\n\nYour order ${order.orderId} (${order.productName}) status has been updated to: ${status}.\n\nNote: ${note || 'No additional notes.'}\n\nTrack your order at the Client Portal.\n\nBest regards,\nSmart Job Work Team`,
+                    message: `Hello ${order.user.name},\n\nYour order ${order.orderId} (${order.productName}) status has been updated to: ${status}.\n\nNote: ${note || 'No additional notes.'}\n\nTrack your order at the Client Portal.\n\nBest regards,\nV.M.S GARMENTS Team`,
                     html: `<h3>Order Status Update</h3>
                            <p>Hello <b>${order.user.name}</b>,</p>
                            <p>Your order <b>${order.orderId}</b> (<i>${order.productName}</i>) status has been updated to: <b style="color: #dc2626;">${status}</b>.</p>

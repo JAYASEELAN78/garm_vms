@@ -198,7 +198,7 @@ export const emailAPI = {
     sendReport: (data) => api.post('/email/send-report', data),
 };
 
-// Smart Job Work API
+// V.M.S GARMENTS API
 export const companiesAPI = {
     getAll: () => api.get('/companies'),
     create: (data) => api.post('/companies', data),

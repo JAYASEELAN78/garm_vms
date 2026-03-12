@@ -1,4 +1,4 @@
-# Smart Job Work Order Management System
+# V.M.S GARMENTS Order Management System
 
 A full-stack MERN application for manufacturing companies to manage job work orders from client companies.
 
@@ -22,7 +22,7 @@ cd backend
 npm install
 npm run dev
 ```
-> Default admin auto-created: `admin@smartjobwork.com` / `admin123`
+> Default admin auto-created: `admin@vmsgarments.com` / `admin123`
 
 ### 2. Client Portal
 ```bash

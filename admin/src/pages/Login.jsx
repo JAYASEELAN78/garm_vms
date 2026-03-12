@@ -37,7 +37,7 @@ const Login = () => {
                     Admin Login
                 </h2>
                 <p className="mt-2 text-center text-sm text-gray-600">
-                    Smart Job Work Order Management System
+                    V.M.S GARMENTS Order Management System
                 </p>
             </div>
 
