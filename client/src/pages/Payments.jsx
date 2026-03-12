@@ -16,6 +16,7 @@ import { SiPhonepe, SiGooglepay } from 'react-icons/si'
 import { formatDate } from '../utils/helpers'
 import { loadStripe } from '@stripe/stripe-js'
 import { motion, AnimatePresence } from 'framer-motion'
+import qrCodeImage from '../assets/qr-code.png'
 
 const Payments = () => {
     const navigate = useNavigate()
@@ -25,6 +26,7 @@ const Payments = () => {
     const [showModal, setShowModal] = useState(false)
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [selectedMethod, setSelectedMethod] = useState(null)
+    const [showQRModal, setShowQRModal] = useState(false)
 
     const paymentMethods = [
         { id: 'upi', name: 'UPI', icon: <SiPhonepe className="text-purple-600" />, desc: 'PhonePe, GPay, Paytm' },
@@ -84,6 +86,12 @@ const Payments = () => {
     const handlePayment = async () => {
         if (!selectedMethod) {
             toast.error('Please select a payment method')
+            return
+        }
+
+        if (selectedMethod.id === 'qr') {
+            setShowModal(false)
+            setShowQRModal(true)
             return
         }
 
@@ -304,6 +312,80 @@ const Payments = () => {
                                 <HiOutlineCurrencyRupee className="text-gray-400" />
                                 <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount to Pay:</span>
                                 <span className="text-sm font-black text-gray-800">₹{(selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
+                            </div>
+                        </motion.div>
+                    </div>
+                )}
+            </AnimatePresence>
+
+            {/* Manual QR Payment Modal */}
+            <AnimatePresence>
+                {showQRModal && (
+                    <div className="fixed inset-0 z-[101] flex items-center justify-center p-4">
+                        <motion.div
+                            initial={{ opacity: 0 }}
+                            animate={{ opacity: 1 }}
+                            exit={{ opacity: 0 }}
+                            onClick={() => setShowQRModal(false)}
+                            className="absolute inset-0 bg-black/60 backdrop-blur-md"
+                        />
+                        <motion.div
+                            initial={{ scale: 0.9, opacity: 0, y: 20 }}
+                            animate={{ scale: 1, opacity: 1, y: 0 }}
+                            exit={{ scale: 0.9, opacity: 0, y: 20 }}
+                            className="relative w-full max-w-sm bg-white rounded-[2.5rem] shadow-2xl p-8 overflow-hidden"
+                        >
+                            <div className="text-center">
+                                <div className="flex justify-between items-center mb-6">
+                                    <h3 className="text-xl font-black text-gray-800">Scan to Pay</h3>
+                                    <button
+                                        onClick={() => setShowQRModal(false)}
+                                        className="p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                    >
+                                        <HiX className="w-5 h-5 text-gray-400" />
+                                    </button>
+                                </div>
+
+                                <div className="space-y-4 mb-8">
+                                    <div className="relative group">
+                                        <div className="absolute -inset-1 bg-gradient-to-r from-red-600 to-red-500 rounded-[2rem] blur opacity-25 group-hover:opacity-40 transition duration-1000 group-hover:duration-200"></div>
+                                        <div className="relative bg-white p-6 rounded-[1.8rem] border border-gray-100">
+                                            <img
+                                                src={qrCodeImage}
+                                                alt="UPI QR Code"
+                                                className="w-full aspect-square rounded-xl shadow-inner border border-gray-50"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-gray-50 rounded-2xl border border-gray-100">
+                                        <div className="text-xs font-bold text-gray-400 uppercase tracking-widest mb-1">UPI Details</div>
+                                        <div className="font-black text-gray-800 text-lg">JAYASEELAN. S</div>
+                                        <div className="text-sm font-mono text-read-600 font-bold bg-red-50 inline-block px-2 py-0.5 rounded-lg mt-1">
+                                            jayaseelanjaya67@okhdfcbank
+                                        </div>
+                                    </div>
+
+                                    <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
+                                        <div className="text-xs font-bold text-green-600 uppercase tracking-widest mb-1">Amount to Pay</div>
+                                        <div className="text-2xl font-black text-green-700">₹{(selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</div>
+                                    </div>
+                                </div>
+
+                                <div className="grid grid-cols-1 gap-3">
+                                    <button
+                                        onClick={() => {
+                                            toast.success('Payment notification sent to admin!')
+                                            setShowQRModal(false)
+                                        }}
+                                        className="w-full py-4 bg-gradient-to-r from-red-600 to-red-700 text-white rounded-2xl font-black text-lg hover:from-red-700 hover:to-red-800 transition-all shadow-xl shadow-red-200"
+                                    >
+                                        I have paid
+                                    </button>
+                                    <p className="text-[10px] text-gray-400 font-bold uppercase tracking-widest mt-2">
+                                        Admin will verify and update your status shortly
+                                    </p>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
