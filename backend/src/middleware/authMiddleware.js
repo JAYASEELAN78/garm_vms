@@ -19,8 +19,11 @@ export const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
-            return res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('Auth Middleware Error:', error.message);
+            if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Not authorized, token failed' });
+            }
+            return res.status(500).json({ message: 'Internal server error during authentication', error: error.message });
         }
     } else if (req.query.token) {
         try {
@@ -35,8 +38,11 @@ export const protect = async (req, res, next) => {
 
             next();
         } catch (error) {
-            console.error(error);
-            return res.status(401).json({ message: 'Not authorized, token failed' });
+            console.error('Auth Middleware Error (Query):', error.message);
+            if (error.name === 'JsonWebTokenError' || error.name === 'TokenExpiredError') {
+                return res.status(401).json({ message: 'Not authorized, token failed' });
+            }
+            return res.status(500).json({ message: 'Internal server error during authentication', error: error.message });
         }
     }
 

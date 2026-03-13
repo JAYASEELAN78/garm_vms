@@ -48,13 +48,12 @@ const Sidebar = ({ isOpen, onClose }) => {
                     {/* Logo */}
                     <div className="p-6 border-b border-gray-100">
                         <div className="flex items-center justify-between">
-                            <div className="flex items-center gap-3">
-                                <div className="w-12 h-12">
+                            <div className="flex flex-col items-center justify-center gap-2">
+                                <div className="w-24 h-auto">
                                     <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                                 </div>
-                                <div>
-                                    <h1 className="text-lg font-bold text-red-600 leading-none">V.M.S</h1>
-                                    <h1 className="text-lg font-bold text-gray-800">GARMENTS</h1>
+                                <div className="text-center">
+                                    <h1 className="text-lg font-bold text-red-600 leading-none">V.M.S GARMENTS</h1>
                                     <p className="text-[10px] text-gray-400 uppercase tracking-wider">Client Portal</p>
                                 </div>
                             </div>

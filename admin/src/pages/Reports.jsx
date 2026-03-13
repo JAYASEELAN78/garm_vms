@@ -9,7 +9,7 @@ import {
 } from 'recharts';
 import {
     TrendingUp, Download, ShoppingCart, CheckCircle,
-    Clock, Package, Users, FileText
+    Clock, Package, Users, FileText, Truck
 } from 'lucide-react';
 import api from '../services/api';
 import toast from 'react-hot-toast';
@@ -74,6 +74,7 @@ const ReportsPage = () => {
     const delivered = filtered.filter(o => o.status === 'Delivered').length;
     const pending = filtered.filter(o => o.status === 'Pending').length;
     const inProd = filtered.filter(o => ['Processing', 'In Production', 'Quality Check'].includes(o.status)).length;
+    const dispatched = filtered.filter(o => o.status === 'Dispatched').length;
 
     // Status distribution for Pie
     const statusCounts = {};
@@ -160,11 +161,12 @@ const ReportsPage = () => {
             ) : (
                 <>
                     {/* Stat Cards */}
-                    <div className="grid grid-cols-2 lg:grid-cols-4 gap-4">
+                    <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
                         <StatCard icon={ShoppingCart} label="Total Orders" value={total} subtext="In selected period" color="bg-blue-500" />
                         <StatCard icon={CheckCircle} label="Delivered" value={delivered} subtext={`${total ? Math.round(delivered / total * 100) : 0}% completion rate`} color="bg-emerald-500" />
                         <StatCard icon={Clock} label="Pending" value={pending} subtext="Awaiting processing" color="bg-amber-500" />
                         <StatCard icon={Package} label="In Production" value={inProd} subtext="Active production" color="bg-purple-500" />
+                        <StatCard icon={Truck} label="Dispatched" value={dispatched} subtext="En route to delivery" color="bg-indigo-500" />
                     </div>
 
                     {/* Charts Row */}

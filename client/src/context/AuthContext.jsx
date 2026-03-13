@@ -29,7 +29,7 @@ export const AuthProvider = ({ children }) => {
 
     const login = async (email, password) => {
         const { data } = await api.post('/api/auth/login', { email, password })
-        const userWithToken = { ...data.user, token: data.token }
+        const userWithToken = data
         localStorage.setItem('user', JSON.stringify(userWithToken))
         api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
         setUser(userWithToken)
@@ -38,7 +38,7 @@ export const AuthProvider = ({ children }) => {
 
     const register = async (formData) => {
         const { data } = await api.post('/api/auth/register', formData)
-        const userWithToken = { ...data.user, token: data.token }
+        const userWithToken = data
         localStorage.setItem('user', JSON.stringify(userWithToken))
         api.defaults.headers.common['Authorization'] = `Bearer ${data.token}`
         setUser(userWithToken)

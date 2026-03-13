@@ -686,6 +686,86 @@ export const calculateAndSendDailySummary = async (recipientEmails) => {
   }
 };
 
+// ================================================================
+//  7. ORDER STATUS UPDATE NOTIFICATION
+// ================================================================
+export const sendOrderStatusUpdateEmail = async (clientEmail, orderData) => {
+  const { orderId, productName, oldStatus, newStatus, clientName } = orderData;
+  const subject = `📦 Order ${orderId} — Status Updated to "${newStatus}"`;
+
+  const WORKFLOW = ['Pending', 'Payment Confirmation', 'Material Received', 'Processing', 'Quality Check', 'Completed', 'Dispatched', 'Delivered'];
+  const currentIdx = WORKFLOW.indexOf(newStatus);
+  const progressPercent = currentIdx >= 0 ? Math.round((currentIdx / (WORKFLOW.length - 1)) * 100) : 0;
+
+  const statusColors = {
+    'Pending': '#3b82f6',
+    'Payment Confirmation': '#f97316',
+    'Material Received': '#8b5cf6',
+    'Processing': '#f59e0b',
+    'Quality Check': '#06b6d4',
+    'Completed': '#10b981',
+    'Dispatched': '#6366f1',
+    'Delivered': '#22c55e',
+  };
+  const statusColor = statusColors[newStatus] || '#6b7280';
+
+  const stepsHtml = WORKFLOW.map((step, idx) => {
+    const isDone = idx <= currentIdx;
+    const isCurrent = idx === currentIdx;
+    const bg = isCurrent ? statusColor : isDone ? '#10b981' : '#e5e7eb';
+    const textColor = isDone || isCurrent ? '#ffffff' : '#9ca3af';
+    return `
+      <td style="text-align:center;padding:4px;">
+        <div style="width:28px;height:28px;border-radius:50%;background:${bg};color:${textColor};font-size:11px;font-weight:700;line-height:28px;margin:0 auto;">${idx + 1}</div>
+        <div style="font-size:9px;color:${isCurrent ? statusColor : isDone ? '#374151' : '#9ca3af'};margin-top:4px;font-weight:${isCurrent ? '700' : '400'};max-width:65px;margin-left:auto;margin-right:auto;">${step}</div>
+      </td>`;
+  }).join('');
+
+  const bodyHtml = `
+    <p style="margin:0 0 8px;font-size:15px;color:#374151;line-height:1.7;">
+      Hello${clientName ? ' ' + clientName : ''},
+    </p>
+    <p style="margin:0 0 24px;font-size:15px;color:#374151;line-height:1.7;">
+      Your order status has been updated. Here are the details:
+    </p>
+
+    <!-- Order details card -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#f9fafb;border:1px solid #e5e7eb;border-radius:12px;overflow:hidden;margin-bottom:24px;">
+      ${detailRow('Order ID', orderId, { bold: true })}
+      ${detailRow('Product', productName || 'N/A')}
+      ${detailRow('Previous Status', oldStatus, { color: '#6b7280' })}
+      ${detailRow('New Status', `<span style="display:inline-block;padding:4px 14px;border-radius:20px;font-size:12px;font-weight:700;background:${statusColor}15;color:${statusColor};border:1px solid ${statusColor}40;">${newStatus}</span>`)}
+    </table>
+
+    <!-- Progress bar -->
+    <div style="background:#f3f4f6;border-radius:10px;padding:4px;margin-bottom:8px;">
+      <div style="background:linear-gradient(90deg,#10b981,${statusColor});height:8px;border-radius:8px;width:${progressPercent}%;transition:width 0.3s;"></div>
+    </div>
+    <p style="text-align:right;font-size:11px;color:#6b7280;margin:0 0 20px;">${progressPercent}% Complete</p>
+
+    <!-- Steps timeline -->
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="margin-bottom:24px;">
+      <tr>${stepsHtml}</tr>
+    </table>
+
+    <p style="margin:0;font-size:13px;color:#6b7280;line-height:1.6;text-align:center;">
+      You can log in to the client portal to view full order details.
+    </p>
+  `;
+
+  const html = buildEmailLayout({
+    title: 'Order Status Updated',
+    subtitle: `Order ${orderId} → ${newStatus}`,
+    icon: '📦',
+    accentFrom: '#1e40af',
+    accentTo: statusColor,
+    bodyHtml,
+  });
+
+  return sendEmail(clientEmail, subject, html);
+};
+
+
 export default {
   sendBillNotification,
   sendPasswordResetEmail,
@@ -694,5 +774,6 @@ export default {
   sendNotification,
   calculateAndSendDailySummary,
   isEmailConfigured,
-  checkAndNotifyLowStock
+  checkAndNotifyLowStock,
+  sendOrderStatusUpdateEmail
 };

@@ -30,7 +30,7 @@ const Login = () => {
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
-                <div className="mx-auto w-24 h-24 mb-6">
+                <div className="mx-auto w-40 h-auto mb-6">
                     <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                 </div>
                 <h2 className="mt-2 text-center text-3xl font-extrabold text-gray-900">

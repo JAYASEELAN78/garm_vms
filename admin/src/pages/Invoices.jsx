@@ -26,19 +26,29 @@ const InvoicesPage = () => {
 
     const handleDownloadInvoice = async (id, invoiceId) => {
         try {
-            const response = await api.get(`/api/invoices/${id}/pdf`, { responseType: 'blob' });
-            const url = window.URL.createObjectURL(new Blob([response.data]));
+            const response = await api.get(`/api/invoices/${id}/pdf?t=${Date.now()}`, { 
+                responseType: 'blob' 
+            });
+            
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            
             const link = document.createElement('a');
             link.href = url;
             link.setAttribute('download', `invoice-${invoiceId}.pdf`);
             document.body.appendChild(link);
             link.click();
-            link.parentNode.removeChild(link);
+            
+            // Allow some time for the browser to trigger the download before cleanup
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                if (link.parentNode) {
+                    document.body.removeChild(link);
+                }
+            }, 100);
         } catch (err) {
-            // IDM interception aborts the fetch before a response is received.
-            if (err.response) {
-                toast.error('Failed to download PDF');
-            }
+            console.error('Download error:', err);
+            toast.error('Failed to download PDF');
         }
     };
 

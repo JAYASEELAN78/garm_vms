@@ -12,8 +12,10 @@ const OrderDetails = () => {
     const { id } = useParams()
     const [order, setOrder] = useState(null)
     const [loading, setLoading] = useState(true)
+    const [settings, setSettings] = useState(null)
     const [message, setMessage] = useState('')
     const [messages, setMessages] = useState([])
+    const [showCancelConfirm, setShowCancelConfirm] = useState(false)
     const { user } = useAuth()
 
     useEffect(() => {
@@ -21,6 +23,10 @@ const OrderDetails = () => {
             try {
                 const { data } = await getOrderById(id);
                 setOrder(data)
+                
+                // Fetch settings for admin contact info
+                const { data: settingsData } = await api.get('/api/settings');
+                setSettings(settingsData.data);
             } catch (err) { console.error(err) }
             finally { setLoading(false) }
         }
@@ -84,37 +90,81 @@ const OrderDetails = () => {
                 {/* Main */}
                 <div className="lg:col-span-2 space-y-6">
                     {order.priceStatus === 'Quoted' && (
-                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm flex flex-col md:flex-row gap-6 items-center justify-between">
-                            <div>
-                                <h3 className="text-lg font-bold text-amber-900 flex items-center gap-2">
-                                    <HiOutlineCheckCircle className="w-5 h-5" />
-                                    Price Quote Received
-                                </h3>
-                                <p className="text-amber-700 text-sm mt-1">
-                                    Admin has quoted <span className="font-bold text-lg text-amber-900">₹{order.estimatedCost?.toLocaleString()}</span> for this order.
-                                    Please confirm this price so we can start procuring materials.
-                                </p>
+                        <div className="bg-amber-50 border border-amber-200 rounded-2xl p-6 shadow-sm">
+                            <div className="flex flex-col md:flex-row gap-6 items-start md:items-center justify-between">
+                                <div>
+                                    <h3 className="text-lg font-bold text-amber-900 flex items-center gap-2">
+                                        <HiOutlineCheckCircle className="w-5 h-5" />
+                                        Price Quote Received
+                                    </h3>
+                                    <p className="text-amber-700 text-sm mt-1 leading-relaxed">
+                                        Admin has quoted <span className="font-bold text-lg text-amber-900">₹{order.estimatedCost?.toLocaleString()}</span> for this order.
+                                        Please confirm this price so we can start procuring materials. 
+                                        {settings?.company?.phone && (
+                                            <span className="block mt-2 font-medium">
+                                                For negotiation, contact Admin: <a href={`tel:${settings.company.phone}`} className="text-amber-900 underline underline-offset-2">{settings.company.phone}</a>
+                                            </span>
+                                        )}
+                                    </p>
+                                </div>
+                                <div className="flex gap-3 w-full md:w-auto">
+                                    <button
+                                        onClick={() => document.getElementById('messageInput')?.focus()}
+                                        className="px-4 py-2 border border-amber-300 text-amber-700 bg-white rounded-lg text-sm font-semibold hover:bg-amber-50 w-full md:w-auto text-center"
+                                    >
+                                        Negotiate
+                                    </button>
+                                    <button
+                                        onClick={() => setShowCancelConfirm(true)}
+                                        className="px-4 py-2 border border-red-300 text-red-600 bg-white rounded-lg text-sm font-semibold hover:bg-red-50 w-full md:w-auto text-center"
+                                    >
+                                        Cancel Order
+                                    </button>
+                                    <button
+                                        onClick={async () => {
+                                            try {
+                                                await api.put(`/api/orders/${id}`, { priceStatus: 'Confirmed' });
+                                                setOrder({ ...order, priceStatus: 'Confirmed' });
+                                                toast.success('Price accepted! Work will commence shortly.');
+                                            } catch (e) { toast.error('Failed to accept price'); }
+                                        }}
+                                        className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-bold shadow-md w-full md:w-auto text-center"
+                                    >
+                                        Accept Price
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex gap-3 w-full md:w-auto">
-                                <button
-                                    onClick={() => document.getElementById('messageInput')?.focus()}
-                                    className="px-4 py-2 border border-amber-300 text-amber-700 bg-white rounded-lg text-sm font-semibold hover:bg-amber-50 w-full md:w-auto text-center"
-                                >
-                                    Negotiate
-                                </button>
-                                <button
-                                    onClick={async () => {
-                                        try {
-                                            await api.put(`/api/orders/${id}`, { priceStatus: 'Confirmed' });
-                                            setOrder({ ...order, priceStatus: 'Confirmed' });
-                                            toast.success('Price accepted! Work will commence shortly.');
-                                        } catch (e) { toast.error('Failed to accept price'); }
-                                    }}
-                                    className="px-6 py-2 bg-amber-600 hover:bg-amber-700 text-white rounded-lg text-sm font-bold shadow-md w-full md:w-auto text-center"
-                                >
-                                    Accept Price
-                                </button>
-                            </div>
+
+                            {/* Cancel Confirmation Warning */}
+                            {showCancelConfirm && (
+                                <div className="mt-4 bg-red-50 border-2 border-red-300 rounded-xl p-4 animate-fade-in">
+                                    <p className="text-red-700 font-bold text-sm flex items-center gap-2 mb-3">
+                                        <span className="text-lg">⚠️</span>
+                                        Are you sure you want to cancel this order?
+                                    </p>
+                                    <p className="text-red-500 text-xs mb-4">This action cannot be undone. The order will be permanently cancelled.</p>
+                                    <div className="flex gap-3">
+                                        <button
+                                            onClick={async () => {
+                                                try {
+                                                    await api.delete(`/api/orders/${id}`);
+                                                    toast.success('Order has been cancelled and deleted.');
+                                                    navigate('/my-orders');
+                                                } catch (e) { toast.error('Failed to cancel order'); }
+                                            }}
+                                            className="px-5 py-2 bg-red-600 hover:bg-red-700 text-white rounded-lg text-sm font-bold shadow-md"
+                                        >
+                                            Yes, Cancel Order
+                                        </button>
+                                        <button
+                                            onClick={() => setShowCancelConfirm(false)}
+                                            className="px-5 py-2 border border-gray-300 text-gray-600 bg-white rounded-lg text-sm font-semibold hover:bg-gray-50"
+                                        >
+                                            No, Keep Order
+                                        </button>
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
                     {/* Timeline */}
@@ -128,8 +178,15 @@ const OrderDetails = () => {
                                 return (
                                     <div key={status} className="flex gap-4 pb-6 last:pb-0">
                                         <div className="flex flex-col items-center">
-                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${isCurrent ? 'bg-red-500 shadow-lg shadow-red-500/30 ring-4 ring-red-100' :
-                                                isCompleted ? 'bg-emerald-500 shadow-sm' : 'bg-gray-100 border-2 border-gray-300'}`}>
+                                            <div className={`w-10 h-10 rounded-full flex items-center justify-center flex-shrink-0 ${
+                                                isCurrent && (status === 'Delivered' || status === 'Dispatched' || status === 'Completed')
+                                                    ? 'bg-emerald-500 shadow-lg shadow-emerald-500/30 ring-4 ring-emerald-100'
+                                                    : isCurrent
+                                                        ? 'bg-red-500 shadow-lg shadow-red-500/30 ring-4 ring-red-100'
+                                                        : isCompleted
+                                                            ? 'bg-emerald-500 shadow-sm'
+                                                            : 'bg-gray-100 border-2 border-gray-300'
+                                                }`}>
                                                 {isCompleted ? <HiOutlineCheckCircle className="w-5 h-5 text-white" /> : <span className="text-xs text-gray-400">{index + 1}</span>}
                                             </div>
                                             {index < ORDER_STATUSES.length - 1 && <div className={`w-0.5 flex-1 mt-2 ${isCompleted ? 'bg-emerald-400' : 'bg-gray-200'}`}></div>}
@@ -159,7 +216,14 @@ const OrderDetails = () => {
                             )) : <p className="text-gray-400 text-sm text-center py-4">No messages yet. Send a message to the admin!</p>}
                         </div>
                         <form onSubmit={handleSendMessage} className="flex gap-3">
-                            <input type="text" value={message} onChange={(e) => setMessage(e.target.value)} className="input-field flex-1" placeholder="Send a message to admin..." />
+                            <input 
+                                id="messageInput"
+                                type="text" 
+                                value={message} 
+                                onChange={(e) => setMessage(e.target.value)} 
+                                className="input-field flex-1" 
+                                placeholder="Send a message to admin..." 
+                            />
                             <button type="submit" className="btn-primary px-4"><HiOutlinePaperAirplane className="w-5 h-5 rotate-90" /></button>
                         </form>
                     </div>

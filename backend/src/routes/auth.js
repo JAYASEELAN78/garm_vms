@@ -71,7 +71,7 @@ router.post('/google', async (req, res) => {
                 email,
                 password: await bcrypt.hash(googleId + Math.random().toString(), 10),
                 phone: '',
-                role: 'staff',
+                role: 'client',
                 avatar: picture,
                 googleId,
                 isActive: true
@@ -135,7 +135,7 @@ router.post('/login-phone', async (req, res) => {
                 email: `${phone}@phone.local`,
                 password: await bcrypt.hash(Math.random().toString(), 10),
                 phone,
-                role: 'staff'
+                role: 'client'
             });
             await user.save();
         }
@@ -284,7 +284,7 @@ router.post('/register', async (req, res) => {
             email,
             password: hashedPassword,
             phone,
-            role: companyId ? 'client' : 'staff',
+            role: 'client',
             company: companyId
         });
 
@@ -354,11 +354,6 @@ router.put('/profile', async (req, res) => {
         // Update or create company details
         const { companyName, companyAddress, gstNumber, phone } = req.body;
         if (companyName) {
-            // Upgrade role to client if they were staff/default
-            if (user.role === 'staff' || !user.role) {
-                user.role = 'client';
-            }
-
             if (user.company) {
                 // Update existing company
                 await Company.findByIdAndUpdate(user.company, {

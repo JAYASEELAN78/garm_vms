@@ -21,12 +21,30 @@ const Invoices = () => {
         finally { setLoading(false) }
     }
 
-    const handleDownload = (id) => {
+    const handleDownload = async (id, invoiceId) => {
         try {
-            const token = localStorage.getItem('token');
-            const url = `${import.meta.env.VITE_API_URL || 'http://localhost:5000'}/api/invoices/${id}/download?token=${token}`;
-            window.open(url, '_blank');
+            const response = await api.get(`/api/invoices/${id}/download?t=${Date.now()}`, { 
+                responseType: 'blob' 
+            });
+            
+            const blob = new Blob([response.data], { type: 'application/pdf' });
+            const url = window.URL.createObjectURL(blob);
+            
+            const link = document.createElement('a');
+            link.href = url;
+            link.setAttribute('download', `invoice-${invoiceId || id}.pdf`);
+            document.body.appendChild(link);
+            link.click();
+
+            // Allow some time for the browser to trigger the download before cleanup
+            setTimeout(() => {
+                window.URL.revokeObjectURL(url);
+                if (link.parentNode) {
+                    document.body.removeChild(link);
+                }
+            }, 100);
         } catch (err) {
+            console.error('Download error:', err);
             toast.error('Download failed');
         }
     }
@@ -52,7 +70,11 @@ const Invoices = () => {
                             <tr><td colSpan="6" className="px-6 py-12 text-center"><div className="w-10 h-10 border-3 border-red-500 border-t-transparent rounded-full animate-spin mx-auto"></div></td></tr>
                         ) : invoices.length > 0 ? invoices.map(inv => (
                             <tr key={inv._id} className="hover:bg-gray-50 transition-colors">
-                                <td className="px-6 py-4 text-sm font-bold text-gray-800">{inv.invoiceId}</td>
+                                <td className="px-6 py-4 text-sm font-bold text-gray-800">
+                                    <button onClick={() => handleDownload(inv._id, inv.invoiceId)} className="hover:text-red-600 transition-colors cursor-pointer text-left">
+                                        {inv.invoiceId}
+                                    </button>
+                                </td>
                                 <td className="px-6 py-4 text-sm text-red-600 font-mono font-medium">{inv.orderNumber}</td>
                                 <td className="px-6 py-4 text-sm text-gray-500">{formatDate(inv.createdAt)}</td>
                                 <td className="px-6 py-4 text-sm font-bold text-gray-800">₹{inv.total?.toLocaleString()}</td>

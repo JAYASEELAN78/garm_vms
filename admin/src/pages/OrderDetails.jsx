@@ -1,13 +1,13 @@
 import { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { Card, CardHeader, CardContent } from '../components/ui/Card';
-import { ArrowLeft, Box, Calendar, DollarSign, FileText } from 'lucide-react';
+import { ArrowLeft, Box, Calendar, DollarSign, FileText, MessageSquare, Send, User, Truck } from 'lucide-react';
 import StatusBadge from '../components/ui/StatusBadge';
 import api from '../services/api';
 import toast from 'react-hot-toast';
 
 const WORKFLOW_STEPS = [
-    'Pending', 'Material Received', 'Processing', 'Quality Check', 'Completed', 'Dispatched', 'Delivered'
+    'Pending', 'Payment Confirmation', 'Material Received', 'Processing', 'Quality Check', 'Completed', 'Dispatched', 'Delivered'
 ];
 
 const OrderTimeline = ({ currentStatus }) => {
@@ -52,6 +52,9 @@ const OrderDetailsPage = () => {
     const [order, setOrder] = useState(null);
     const [loading, setLoading] = useState(true);
     const [updating, setUpdating] = useState(false);
+    const [messages, setMessages] = useState([]);
+    const [replyText, setReplyText] = useState('');
+    const [selectedStatus, setSelectedStatus] = useState('');
 
     useEffect(() => {
         const fetchOrder = async () => {
@@ -59,7 +62,10 @@ const OrderDetailsPage = () => {
                 // Assume API supports getting single order by ID or we filter
                 const { data } = await api.get(`/api/orders`);
                 const found = data.find(o => o._id === id);
-                if (found) setOrder(found);
+                if (found) {
+                    setOrder(found);
+                    setSelectedStatus(found.status);
+                }
             } catch (error) {
                 toast.error('Failed to load order details');
             } finally {
@@ -68,6 +74,50 @@ const OrderDetailsPage = () => {
         };
         fetchOrder();
     }, [id]);
+
+    const fetchMessages = async () => {
+        try {
+            const { data: msgs } = await api.get('/api/messages');
+            const orderMsgs = msgs.filter(m => {
+                const oid = m.order_id?._id?.toString() || m.order_id?.toString();
+                return oid === id;
+            });
+            setMessages(orderMsgs.reverse());
+        } catch (err) { console.error('Message fetch error:', err); }
+    };
+
+    useEffect(() => {
+        fetchMessages();
+        const interval = setInterval(fetchMessages, 5000); // poll every 5s
+        return () => clearInterval(interval);
+    }, [id]);
+
+    const handleSendReply = async (e) => {
+        e.preventDefault();
+        if (!replyText.trim()) return;
+
+        const clientId = order.user_id?._id || order.user_id || 
+                         messages.find(m => m.sender === 'client')?.client_id?._id || 
+                         messages.find(m => m.sender === 'client')?.client_id;
+
+        if (!clientId) {
+            return toast.error('Could not identify client ID');
+        }
+
+        try {
+            const { data } = await api.post('/api/messages/reply', {
+                client_id: clientId,
+                order_id: id,
+                message: replyText
+            });
+            setMessages(prev => [data, ...prev]);
+            setReplyText('');
+            toast.success('Message sent to client!');
+        } catch (err) { 
+            console.error('Send error:', err);
+            toast.error('Failed to send'); 
+        }
+    };
 
     const handleUpdateStatus = async (newStatus) => {
         if (newStatus !== 'Pending' && newStatus !== 'Cancelled' &&
@@ -110,15 +160,34 @@ const OrderDetailsPage = () => {
                     <OrderTimeline currentStatus={order.status} />
 
                     <div className="mt-8 flex justify-end gap-3 border-t border-gray-100 pt-6">
+                        <span className="text-gray-400 text-sm self-center">Status Update:</span>
                         <select
                             className="border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none"
-                            onChange={(e) => handleUpdateStatus(e.target.value)}
-                            value={order.status}
+                            onChange={(e) => setSelectedStatus(e.target.value)}
+                            value={selectedStatus}
                             disabled={updating}
                         >
-                            {WORKFLOW_STEPS.map(s => <option key={s} value={s}>{s}</option>)}
+                            {WORKFLOW_STEPS.map((s, idx) => {
+                                const currentIdx = WORKFLOW_STEPS.indexOf(order.status);
+                                // Only allow current and forward statuses (no reverting)
+                                if (idx < currentIdx) return null;
+                                const isDisabled = (s !== 'Pending' && s !== 'Cancelled' && 
+                                                 order.priceStatus !== 'Confirmed' && 
+                                                 order.priceStatus !== 'Finalized');
+                                return (
+                                    <option key={s} value={s} disabled={isDisabled}>
+                                        {s} {isDisabled ? '(Requires Price Confirmation)' : ''}
+                                    </option>
+                                );
+                            })}
                         </select>
-                        <button disabled={updating} className="btn-primary">Update Status</button>
+                        <button 
+                            disabled={updating} 
+                            className="bg-blue-600 hover:bg-blue-700 text-white px-4 py-2 rounded-lg text-sm font-semibold transition-colors disabled:opacity-50"
+                            onClick={() => handleUpdateStatus(selectedStatus)}
+                        >
+                            Update
+                        </button>
                     </div>
                 </CardContent>
             </Card>
@@ -215,8 +284,7 @@ const OrderDetailsPage = () => {
                                 )}
                             </div>
                         </div>
-
-                        {order.status === 'Delivered' && (
+                        {(order.status === 'Dispatched' || order.status === 'Delivered') && (
                             <div className="flex items-start gap-3 mt-6 pt-4 border-t border-gray-100">
                                 <DollarSign className="w-5 h-5 text-gray-400 mt-0.5" />
                                 <div className="w-full">
@@ -267,6 +335,43 @@ const OrderDetailsPage = () => {
                                 </div>
                             </div>
                         )}
+                    </CardContent>
+                </Card>
+
+                {/* Messages Section */}
+                <Card>
+                    <CardHeader 
+                        title="Direct Messages" 
+                        subtitle="Communicate with the client about this order"
+                        icon={<MessageSquare className="w-5 h-5 text-indigo-600" />}
+                    />
+                    <CardContent>
+                        <div className="space-y-3 max-h-60 overflow-y-auto mb-4 pr-1">
+                            {messages.length > 0 ? messages.map((msg, i) => (
+                                <div key={i} className={`p-3 rounded-xl max-w-[90%] border ${msg.sender === 'admin' ? 'ml-auto bg-blue-50 border-blue-100' : 'bg-gray-50 border-gray-200'}`}>
+                                    <div className="flex items-center gap-2 mb-1">
+                                        <div className={`w-5 h-5 rounded-full flex items-center justify-center ${msg.sender === 'admin' ? 'bg-blue-200' : 'bg-orange-100'}`}>
+                                            <User className="w-3 h-3 text-gray-600" />
+                                        </div>
+                                        <span className="text-xs font-semibold text-gray-600">{msg.sender === 'admin' ? 'You (Admin)' : 'Client'}</span>
+                                        <span className="text-[10px] text-gray-400">{new Date(msg.createdAt).toLocaleString()}</span>
+                                    </div>
+                                    <p className="text-sm text-gray-700 whitespace-pre-wrap">{msg.message}</p>
+                                </div>
+                            )) : <p className="text-gray-400 text-sm text-center py-4">No messages yet. Send a message to start the negotiation!</p>}
+                        </div>
+                        <form onSubmit={handleSendReply} className="flex gap-3">
+                            <input 
+                                type="text" 
+                                value={replyText} 
+                                onChange={(e) => setReplyText(e.target.value)} 
+                                className="flex-1 border border-gray-300 rounded-lg px-3 py-2 text-sm focus:outline-none focus:ring-1 focus:ring-blue-500" 
+                                placeholder="Type your reply to client..." 
+                            />
+                            <button type="submit" className="bg-blue-600 hover:bg-blue-700 text-white p-2 rounded-lg transition-colors">
+                                <Send className="w-5 h-5" />
+                            </button>
+                        </form>
                     </CardContent>
                 </Card>
             </div>

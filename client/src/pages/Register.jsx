@@ -64,7 +64,7 @@ const Register = () => {
                     <div className="absolute bottom-32 right-16 w-72 h-72 bg-red-400/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '2s' }}></div>
                 </div>
                 <div className="relative z-10 flex flex-col justify-center px-14">
-                    <div className="w-24 h-24 mb-8">
+                    <div className="w-40 h-auto mb-8">
                         <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain filter brightness-0 invert" />
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-4">Join V.M.S GRAMENTS</h1>
@@ -85,7 +85,7 @@ const Register = () => {
             <div className="w-full lg:w-7/12 flex items-center justify-center p-8 bg-gray-50">
                 <div className="w-full max-w-lg">
                     <div className="lg:hidden mb-8 text-center text-center flex justify-center">
-                        <div className="w-20 h-20 mb-4">
+                        <div className="w-32 h-auto mb-4">
                             <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                         </div>
                     </div>

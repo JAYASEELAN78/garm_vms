@@ -44,7 +44,7 @@ const Login = () => {
                     <div className="absolute bottom-20 right-20 w-80 h-80 bg-red-400/10 rounded-full blur-3xl animate-pulse-slow" style={{ animationDelay: '1.5s' }}></div>
                 </div>
                 <div className="relative z-10 flex flex-col justify-center px-16">
-                    <div className="w-20 h-20 mb-8">
+                    <div className="w-32 h-auto mb-8">
                         <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain filter brightness-0 invert" />
                     </div>
                     <h1 className="text-4xl font-bold text-white mb-4">V.M.S GARMENTS</h1>
@@ -66,8 +66,8 @@ const Login = () => {
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
                 <div className="w-full max-w-md">
                     <div className="lg:hidden mb-10 text-center">
-                        <div className="w-20 h-20 mx-auto mb-4">
-                            <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
+                        <div className="w-32 h-auto mx-auto mb-4">
+                        <img src="/assets/logo.png" alt="VMS Logo" className="w-full h-full object-contain" />
                         </div>
                         <h1 className="text-2xl font-bold text-gray-800">V.M.S GARMENTS</h1>
                     </div>

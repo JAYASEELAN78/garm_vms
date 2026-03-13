@@ -10,7 +10,7 @@ function App() {
 
     // Immediately redirect any logged-in admins to the admin portal
     if (user?.role === 'admin') {
-        window.location.href = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
+        window.location.href = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5173'
         return null
     }
 
@@ -21,6 +21,7 @@ function App() {
                 success: { iconTheme: { primary: '#dc2626', secondary: '#fff' } }
             }} />
             <Routes>
+                <Route path="/" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
                 <Route path="/login" element={!user ? <Login /> : <Navigate to="/dashboard" />} />
                 <Route path="/register" element={!user ? <Register /> : <Navigate to="/dashboard" />} />
                 <Route path="/*" element={user ? <ClientRoutes /> : <Navigate to="/login" />} />

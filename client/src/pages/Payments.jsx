@@ -27,6 +27,7 @@ const Payments = () => {
     const [selectedOrder, setSelectedOrder] = useState(null)
     const [selectedMethod, setSelectedMethod] = useState(null)
     const [showQRModal, setShowQRModal] = useState(false)
+    const [settings, setSettings] = useState(null)
 
     const paymentMethods = [
         { id: 'upi', name: 'UPI', icon: <SiPhonepe className="text-purple-600" />, desc: 'PhonePe, GPay, Paytm' },
@@ -65,13 +66,15 @@ const Payments = () => {
     const fetchData = async () => {
         setLoading(true)
         try {
-            const [paymentsRes, ordersRes] = await Promise.all([
+            const [paymentsRes, ordersRes, settingsRes] = await Promise.all([
                 api.get('/api/payments'),
-                getOrders()
+                getOrders(),
+                api.get('/api/settings')
             ])
             setPayments(paymentsRes.data.data || paymentsRes.data)
+            setSettings(settingsRes.data.data)
             const fetchedOrders = Array.isArray(ordersRes.data) ? ordersRes.data : (ordersRes.data.orders || [])
-            setOrders(fetchedOrders.filter(o => o.status?.toUpperCase() === 'DELIVERED'))
+            setOrders(fetchedOrders.filter(o => o.status?.toUpperCase() === 'DELIVERED' || o.status === 'Dispatched'))
         } catch (err) {
             toast.error('Failed to fetch data')
         } finally {
@@ -100,9 +103,14 @@ const Payments = () => {
         setShowModal(false)
         setLoading(true)
 
+        const baseAmount = order.finalCost || order.estimatedCost || order.price || 0
+        const cgst = settings?.tax?.enableGst ? (baseAmount * (settings.tax.cgstRate / 100)) : 0
+        const sgst = settings?.tax?.enableGst ? (baseAmount * (settings.tax.sgstRate / 100)) : 0
+        const totalAmount = baseAmount + cgst + sgst
+
         try {
             const { data } = await api.post('/api/stripe/create-checkout-session', {
-                amount: order.finalCost || order.estimatedCost || order.price || 0,
+                amount: totalAmount,
                 orderId: order._id
             })
 
@@ -163,7 +171,12 @@ const Payments = () => {
                                     <td className="px-6 py-4 font-mono font-medium text-red-600">{order.order_id || order.orderId}</td>
                                     <td className="px-6 py-4 font-bold text-gray-800">{order.product_name || order.productName}</td>
                                     <td className="px-6 py-4 text-gray-600">{order.quantity} {order.unit}</td>
-                                    <td className="px-6 py-4 font-bold text-gray-900">₹{(order.finalCost || order.estimatedCost || order.price || 0).toLocaleString()}</td>
+                                    <td className="px-6 py-4 font-bold text-gray-900">
+                                        <div className="flex flex-col">
+                                            <span>₹{((order.finalCost || order.estimatedCost || order.price || 0) * (1 + (settings?.tax?.enableGst ? (settings.tax.cgstRate + settings.tax.sgstRate) / 100 : 0))).toLocaleString()}</span>
+                                            <span className="text-[10px] text-gray-400 font-normal">Incl. GST</span>
+                                        </div>
+                                    </td>
                                     <td className="px-6 py-4">
                                         <span className={`status-badge border bg-green-100 text-green-600 border-green-200`}>
                                             {order.status}
@@ -313,10 +326,35 @@ const Payments = () => {
                                 </div>
                             </div>
 
-                            <div className="bg-gray-50 p-4 flex items-center justify-center gap-2 border-t border-gray-100">
-                                <HiOutlineCurrencyRupee className="text-gray-400" />
-                                <span className="text-xs font-bold text-gray-400 uppercase tracking-widest">Amount to Pay:</span>
-                                <span className="text-sm font-black text-gray-800">₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
+                            <div className="bg-gray-50 p-6 border-t border-gray-100 space-y-2">
+                                <div className="flex justify-between text-xs text-gray-500">
+                                    <span>Base Amount:</span>
+                                    <span>₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
+                                </div>
+                                {settings?.tax?.enableGst && (
+                                    <>
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                            <span>CGST ({settings.tax.cgstRate}%):</span>
+                                            <span>₹{((selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) * (settings.tax.cgstRate / 100)).toLocaleString()}</span>
+                                        </div>
+                                        <div className="flex justify-between text-xs text-gray-500">
+                                            <span>SGST ({settings.tax.sgstRate}%):</span>
+                                            <span>₹{((selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) * (settings.tax.sgstRate / 100)).toLocaleString()}</span>
+                                        </div>
+                                    </>
+                                )}
+                                <div className="flex justify-between items-center pt-2 border-t border-gray-200">
+                                    <div className="flex items-center gap-2">
+                                        <HiOutlineCurrencyRupee className="text-red-600" />
+                                        <span className="text-xs font-bold text-gray-800 uppercase tracking-widest">Total Amount:</span>
+                                    </div>
+                                    <span className="text-lg font-black text-red-600">
+                                        ₹{(
+                                            (selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) +
+                                            (settings?.tax?.enableGst ? (selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) * (settings.tax.cgstRate + settings.tax.sgstRate) / 100 : 0)
+                                        ).toLocaleString()}
+                                    </span>
+                                </div>
                             </div>
                         </motion.div>
                     </div>
@@ -371,9 +409,26 @@ const Payments = () => {
                                         </div>
                                     </div>
 
-                                    <div className="p-4 bg-green-50 rounded-2xl border border-green-100">
-                                        <div className="text-xs font-bold text-green-600 uppercase tracking-widest mb-1">Amount to Pay</div>
-                                        <div className="text-2xl font-black text-green-700">₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</div>
+                                    <div className="p-4 bg-green-50 rounded-2xl border-2 border-green-100 space-y-2">
+                                        <div className="flex justify-between text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                                            <span>Order Amount</span>
+                                            <span>₹{(selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0).toLocaleString()}</span>
+                                        </div>
+                                        {settings?.tax?.enableGst && (
+                                            <div className="flex justify-between text-[10px] font-bold text-green-600 uppercase tracking-widest">
+                                                <span>GST ({settings.tax.cgstRate + settings.tax.sgstRate}%)</span>
+                                                <span>₹{((selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) * (settings.tax.cgstRate + settings.tax.sgstRate) / 100).toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                        <div className="pt-2 border-t border-green-200 flex justify-between items-center">
+                                            <div className="text-[10px] font-black text-green-700 uppercase tracking-widest">Total to Pay</div>
+                                            <div className="text-2xl font-black text-green-700">
+                                                ₹{(
+                                                    (selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) +
+                                                    (settings?.tax?.enableGst ? (selectedOrder?.finalCost || selectedOrder?.estimatedCost || selectedOrder?.price || 0) * (settings.tax.cgstRate + settings.tax.sgstRate) / 100 : 0)
+                                                ).toLocaleString()}
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
 
