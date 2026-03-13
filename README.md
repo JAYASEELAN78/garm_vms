@@ -8,7 +8,7 @@ A full-stack MERN application for manufacturing companies to manage job work ord
 |--------|------|------|
 | Backend API | 5000 | Express.js, MongoDB, JWT |
 | Client Portal | 5173 | React, Tailwind CSS, Vite |
-| Admin Dashboard | 5174 | React, Tailwind CSS, Vite, Chart.js |
+| Admin Dashboard | 1574 | React, Tailwind CSS, Vite, Chart.js |
 
 ## Quick Start
 

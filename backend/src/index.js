@@ -45,8 +45,9 @@ const app = express();
 
 // CORS Configuration - Allow frontend
 const allowedOrigins = [
-    'http://localhost:5173',
-    'http://localhost:5174',
+    'http://localhost:5173', // Client Default
+    'http://localhost:1574', // Admin New Port
+    'http://localhost:5174', // Old fallback
     'http://localhost:5175',
     'http://localhost:3000',
     'https://dinesh19-s.github.io',
@@ -119,7 +120,7 @@ app.get('/', (req, res) => {
                 <h3>Frontend Access:</h3>
                 <ul>
                     <li><strong>Client Portal:</strong> <a href="http://localhost:5173">http://localhost:5173</a></li>
-                    <li><strong>Admin Portal:</strong> <a href="http://localhost:5174">http://localhost:5174</a> (or 5175)</li>
+                    <li><strong>Admin Portal:</strong> <a href="http://localhost:1574">http://localhost:1574</a></li>
                 </ul>
             </div>
             <p>For API health check, visit <a href="/api/health">/api/health</a></p>

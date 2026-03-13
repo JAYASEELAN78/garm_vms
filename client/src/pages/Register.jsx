@@ -36,7 +36,7 @@ const Register = () => {
 
             // Redirect admins to the Admin Panel
             if (user?.role === 'admin') {
-                const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:5174'
+                const adminUrl = import.meta.env.VITE_ADMIN_URL || 'http://localhost:1574'
                 window.location.href = adminUrl
                 return
             }
