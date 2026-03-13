@@ -72,6 +72,8 @@ export const createCheckoutSession = async (req, res) => {
 
         const stripe = new Stripe(stripeKey);
 
+        const clientUrl = req.body.redirectUrl || process.env.CLIENT_URL || 'http://localhost:5173';
+
         const session = await stripe.checkout.sessions.create({
             payment_method_types: ['card', 'upi'],
             line_items: [
@@ -88,8 +90,8 @@ export const createCheckoutSession = async (req, res) => {
                 },
             ],
             mode: 'payment',
-            success_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payments?success=true&orderId=${orderId}`,
-            cancel_url: `${process.env.CLIENT_URL || 'http://localhost:5173'}/payments?canceled=true`,
+            success_url: `${clientUrl}/payments?success=true&orderId=${orderId}`,
+            cancel_url: `${clientUrl}/payments?canceled=true`,
             metadata: {
                 orderId: orderId.toString()
             }

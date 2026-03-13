@@ -111,7 +111,8 @@ const Payments = () => {
         try {
             const { data } = await api.post('/api/stripe/create-checkout-session', {
                 amount: totalAmount,
-                orderId: order._id
+                orderId: order._id,
+                redirectUrl: window.location.origin
             })
 
             if (data.simulated) {
